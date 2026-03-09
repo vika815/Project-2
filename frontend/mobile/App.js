@@ -18,6 +18,71 @@ const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://192.168.1.100
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || 'PASTE_HERE';
 const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || 'PASTE_HERE';
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || 'PASTE_HERE';
+
+const GlassCard = ({ children, style }) => (
+  <View style={[styles.glassCard, style]}>{children}</View>
+);
+
+const CustomButton = ({ title, onPress, variant = 'primary', icon }) => (
+  <TouchableOpacity
+    style={[styles.button, variant === 'secondary' && styles.buttonSecondary]}
+    onPress={onPress}
+    activeOpacity={0.8}
+  >
+    {icon && <Ionicons name={icon} size={20} color="#fff" style={styles.buttonIcon} />}
+    <Text style={styles.buttonText}>{title}</Text>
+  </TouchableOpacity>
+);
+
+const CustomInput = ({ placeholder, value, onChangeText, secureTextEntry, icon }) => (
+  <View style={styles.inputContainer}>
+    {icon && <Ionicons name={icon} size={20} color="#fff" style={styles.inputIcon} />}
+    <TextInput
+      style={styles.input}
+      placeholder={placeholder}
+      placeholderTextColor="rgba(255,255,255,0.6)"
+      value={value}
+      onChangeText={onChangeText}
+      secureTextEntry={secureTextEntry}
+    />
+  </View>
+);
+
+const Dropdown = ({ value, options, onSelect, isOpen, setIsOpen, icon }) => (
+  <View style={styles.dropdownContainer}>
+    <TouchableOpacity
+      style={styles.dropdownButton}
+      onPress={() => setIsOpen(!isOpen)}
+      activeOpacity={0.8}
+    >
+      {icon && <Ionicons name={icon} size={20} color="#fff" style={styles.inputIcon} />}
+      <Text style={styles.dropdownButtonText}>{value}</Text>
+      <Ionicons
+        name={isOpen ? 'chevron-up' : 'chevron-down'}
+        size={20}
+        color="#fff"
+      />
+    </TouchableOpacity>
+    {isOpen && (
+      <View style={styles.dropdownList}>
+        {options.map((option, index) => (
+          <TouchableOpacity
+            key={index}
+            style={styles.dropdownItem}
+            onPress={() => {
+              onSelect(option);
+              setIsOpen(false);
+            }}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.dropdownItemText}>{option}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    )}
+  </View>
+);
+
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('login');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -236,72 +301,7 @@ export default function App() {
   };
 
   
-  const GlassCard = ({ children, style }) => (
-    <View style={[styles.glassCard, style]}>{children}</View>
-  );
-
-  const CustomButton = ({ title, onPress, variant = 'primary', icon }) => (
-    <TouchableOpacity
-      style={[styles.button, variant === 'secondary' && styles.buttonSecondary]}
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      {icon && <Ionicons name={icon} size={20} color="#fff" style={styles.buttonIcon} />}
-      <Text style={styles.buttonText}>{title}</Text>
-    </TouchableOpacity>
-  );
-
-  const CustomInput = ({ placeholder, value, onChangeText, secureTextEntry, icon }) => (
-    <View style={styles.inputContainer}>
-      {icon && <Ionicons name={icon} size={20} color="#fff" style={styles.inputIcon} />}
-      <TextInput
-        style={styles.input}
-        placeholder={placeholder}
-        placeholderTextColor="rgba(255,255,255,0.6)"
-        value={value}
-        onChangeText={onChangeText}
-        secureTextEntry={secureTextEntry}
-      />
-    </View>
-  );
-
-  const Dropdown = ({ value, options, onSelect, isOpen, setIsOpen, icon }) => (
-    <View style={styles.dropdownContainer}>
-      <TouchableOpacity
-        style={styles.dropdownButton}
-        onPress={() => setIsOpen(!isOpen)}
-        activeOpacity={0.8}
-      >
-        {icon && <Ionicons name={icon} size={20} color="#fff" style={styles.inputIcon} />}
-        <Text style={styles.dropdownButtonText}>{value}</Text>
-        <Ionicons
-          name={isOpen ? 'chevron-up' : 'chevron-down'}
-          size={20}
-          color="#fff"
-        />
-      </TouchableOpacity>
-      {isOpen && (
-        <View style={styles.dropdownList}>
-          {options.map((option, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.dropdownItem}
-              onPress={() => {
-                onSelect(option);
-                setIsOpen(false);
-              }}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.dropdownItemText}>{option}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-    </View>
-  );
-
-  
-  const LoginScreen = () => (
+  const renderLoginScreen = () => (
     <View style={styles.authContainer}>
       <GlassCard style={styles.authCard}>
         <Ionicons name="sparkles" size={60} color="#FFD700" style={styles.logo} />
@@ -340,7 +340,7 @@ export default function App() {
   );
 
   
-  const SignupScreen = () => (
+  const renderSignupScreen = () => (
     <View style={styles.authContainer}>
       <GlassCard style={styles.authCard}>
         <Ionicons name="sparkles" size={60} color="#131312" style={styles.logo} />
@@ -392,7 +392,7 @@ export default function App() {
   );
 
 
-  const GeneratorScreen = () => (
+  const renderGeneratorScreen = () => (
     <View style={styles.container}>
       
       <View style={styles.header}>
@@ -598,9 +598,9 @@ export default function App() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        {currentScreen === 'login' && <LoginScreen />}
-        {currentScreen === 'signup' && <SignupScreen />}
-        {currentScreen === 'generator' && <GeneratorScreen />}
+        {currentScreen === 'login' && renderLoginScreen()}
+        {currentScreen === 'signup' && renderSignupScreen()}
+        {currentScreen === 'generator' && renderGeneratorScreen()}
       </LinearGradient>
     </View>
   );
