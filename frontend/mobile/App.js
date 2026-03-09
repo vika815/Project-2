@@ -14,12 +14,10 @@ import * as Google from 'expo-auth-session/providers/google';
 // Required for the auth session to properly close the browser after redirect
 WebBrowser.maybeCompleteAuthSession();
 
-// ─── CONFIGURATION ────────────────────────────────────────────────────────────
-// Using Expo SDK's built-in environment variable support.
-// Setup these variables in frontend/mobile/.env
 const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://192.168.1.100:5000';
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || 'PASTE_HERE';
 const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || 'PASTE_HERE';
+const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || 'PASTE_HERE';
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('login');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -43,6 +41,7 @@ export default function App() {
   const [request, googleResponse, promptAsync] = Google.useAuthRequest({
     webClientId: GOOGLE_WEB_CLIENT_ID,
     androidClientId: GOOGLE_ANDROID_CLIENT_ID,
+    iosClientId: GOOGLE_IOS_CLIENT_ID,
     // scopes are set to profile + email automatically by the Google provider
   });
 
