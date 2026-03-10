@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   StyleSheet, Text, View, TextInput, TouchableOpacity,
-  ScrollView, Alert, ActivityIndicator, StatusBar, Clipboard, Image,
+  ScrollView, Alert, ActivityIndicator, StatusBar, Clipboard, Image, Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,7 +14,18 @@ import * as Google from 'expo-auth-session/providers/google';
 // Required for the auth session to properly close the browser after redirect
 WebBrowser.maybeCompleteAuthSession();
 
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://192.168.1.100:5000';
+// ─── CONFIGURATION ────────────────────────────────────────────────────────────
+// When running in a web browser (Expo Web / localhost), the backend is always
+// at localhost:5000. When running on a physical phone over WiFi, it uses the
+// LAN IP from .env. This auto-detection fixes ERR_CONNECTION_TIMED_OUT on web.
+
+const RAW_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://192.168.1.100:5000';
+// On web, replace any LAN IP with localhost so the browser can reach the server
+const BACKEND_URL =
+  Platform.OS === 'web'
+    ? RAW_BACKEND_URL.replace(/http:\/\/[\d.]+:/, 'http://localhost:')
+    : RAW_BACKEND_URL;
+
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || 'PASTE_HERE';
 const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || 'PASTE_HERE';
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || 'PASTE_HERE';
@@ -107,8 +118,17 @@ export default function App() {
     webClientId: GOOGLE_WEB_CLIENT_ID,
     androidClientId: GOOGLE_ANDROID_CLIENT_ID,
     iosClientId: GOOGLE_IOS_CLIENT_ID,
-    // scopes are set to profile + email automatically by the Google provider
   });
+
+  // Log both the request and response for debugging
+  useEffect(() => {
+    console.log('Google Auth Request Loaded:', !!request);
+    if (googleResponse) {
+      console.log('Google Auth Response Type:', googleResponse.type);
+      console.log('Google Auth Response Info:', JSON.stringify(googleResponse, null, 2));
+    }
+  }, [request, googleResponse]);
+
 
   useEffect(() => {
     // This will print the EXACT redirect URI in your terminal!
@@ -300,7 +320,7 @@ export default function App() {
     Alert.alert('Copied!', 'Content copied to clipboard');
   };
 
-  
+
   const renderLoginScreen = () => (
     <View style={styles.authContainer}>
       <GlassCard style={styles.authCard}>
@@ -339,7 +359,7 @@ export default function App() {
     </View>
   );
 
-  
+
   const renderSignupScreen = () => (
     <View style={styles.authContainer}>
       <GlassCard style={styles.authCard}>
@@ -374,15 +394,15 @@ export default function App() {
           icon="lock-closed"
         />
 
-             <CustomButton title="Sign Up" onPress={handleSignup} />
-             <CustomButton
-               title="Continue with Google"
-               onPress={handleGoogleLogin}
-               variant="secondary"
-               icon="logo-google"
-             />
+        <CustomButton title="Sign Up" onPress={handleSignup} />
+        <CustomButton
+          title="Continue with Google"
+          onPress={handleGoogleLogin}
+          variant="secondary"
+          icon="logo-google"
+        />
 
-         <TouchableOpacity onPress={() => setCurrentScreen('login')}>
+        <TouchableOpacity onPress={() => setCurrentScreen('login')}>
           <Text style={styles.linkText}>
             Already have an account? <Text style={styles.linkTextBold}>Login</Text>
           </Text>
@@ -394,7 +414,7 @@ export default function App() {
 
   const renderGeneratorScreen = () => (
     <View style={styles.container}>
-      
+
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Ionicons name="sparkles" size={28} color="#b9b28c" />
@@ -405,24 +425,24 @@ export default function App() {
         </TouchableOpacity>
       </View>
 
-      
-      
+
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-    
+
         <GlassCard style={styles.welcomeCard}>
           <Text style={styles.welcomeText}>
-             Hello, {user?.fullName || 'User'}!
+            Hello, {user?.fullName || 'User'}!
           </Text>
           <Text style={styles.welcomeSubtext}>
             Let's create amazing captions for your content
           </Text>
         </GlassCard>
 
-       
+
         <GlassCard style={styles.formCard}>
           <Text style={styles.sectionTitle}> Caption Details</Text>
 
@@ -436,10 +456,10 @@ export default function App() {
             />
           </View>
 
-          
-          
-          
-          
+
+
+
+
           <View style={styles.formGroup}>
             <Text style={styles.label}>Mood</Text>
             <Dropdown
@@ -452,8 +472,8 @@ export default function App() {
             />
           </View>
 
-          
-          
+
+
           <View style={styles.formGroup}>
             <Text style={styles.label}>Platform</Text>
             <Dropdown
@@ -466,8 +486,8 @@ export default function App() {
             />
           </View>
 
-          
-          
+
+
           <View style={styles.formGroup}>
             <Text style={styles.label}>Image (Optional)</Text>
             <TouchableOpacity
@@ -493,7 +513,7 @@ export default function App() {
           />
         </GlassCard>
 
-       
+
         {isLoading && (
           <GlassCard style={styles.loadingCard}>
             <ActivityIndicator size="large" color="#cbc9bf" />
@@ -501,10 +521,10 @@ export default function App() {
           </GlassCard>
         )}
 
-      
+
         {results && !isLoading && (
           <>
-            
+
             {results.captions && results.captions.length > 0 && (
               <GlassCard style={styles.resultsCard}>
                 <View style={styles.resultHeader}>
@@ -525,9 +545,9 @@ export default function App() {
               </GlassCard>
             )}
 
-          
-            
-            
+
+
+
             {results.hashtags && results.hashtags.length > 0 && (
               <GlassCard style={styles.resultsCard}>
                 <View style={styles.resultHeader}>
@@ -551,8 +571,8 @@ export default function App() {
               </GlassCard>
             )}
 
-          
-            
+
+
             {results.emojis && results.emojis.length > 0 && (
               <GlassCard style={styles.resultsCard}>
                 <View style={styles.resultHeader}>
@@ -578,7 +598,7 @@ export default function App() {
           </>
         )}
 
-        
+
         <View style={styles.footer}>
           <Text style={styles.footerText}>Made with  by Smart Caption Generator</Text>
         </View>
@@ -587,9 +607,9 @@ export default function App() {
   );
 
   return (
-    
-    
-    
+
+
+
     <View style={styles.root}>
       <StatusBar barStyle="light-content" />
       <LinearGradient
